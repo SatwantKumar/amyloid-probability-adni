@@ -1,4 +1,4 @@
-# Amyloid Probability (ADNI) — reproducible analysis code (no data included)
+# Amyloid Probability (ADNI) - reproducible analysis code (no data included)
 
 This repository contains code to reproduce the analysis pipeline and figures for the accompanying manuscript on **pattern-to-probability reporting of amyloid biomarker discordance** using ADNI data.
 
