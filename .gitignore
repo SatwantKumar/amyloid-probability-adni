@@ -1,0 +1,25 @@
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+
+# Editors
+.vscode/
+.idea/
+
+# ADNI data (never commit)
+data/
+
+# Derived artifacts (never commit)
+core/
+audit/
+manifests/
+outputs/
+

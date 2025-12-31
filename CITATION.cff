@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the associated manuscript (details to be updated upon publication)."
+title: "Amyloid Probability (ADNI) — reproducible analysis code"
+type: software
+license: MIT
+authors:
+  - family-names: "Verma"
+    given-names: "Khushboo"
+  - family-names: "Kumar"
+    given-names: "Satwant"
+repository-code: "https://github.com/SatwantKumar/amyloid-probability-adni"
+

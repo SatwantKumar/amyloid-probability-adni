@@ -1,0 +1,133 @@
+analysis_conventions_version: "1.0"
+paper: "B"
+
+evidence_core:
+  release_stamp: "manifests/evidence_core_release.json"
+  tables:
+    triads: "core/paired/triad_pet_anchored.csv"
+    plasma_wide: "core/canonical/plasma_fnibc_wide.csv"
+    clinical: "core/canonical/clinical_adnimerge.csv"
+
+benchmarks:
+  pet:
+    field: "AMYLOID_STATUS"
+    pet_pos_if: "AMYLOID_STATUS == 1"
+    pet_neg_if: "AMYLOID_STATUS == 0"
+  csf_a:
+    metric: "abeta42_40_ratio"
+    pos_if: "abeta42_40_ratio < CUTPOINT"
+    cutpoint: 0.0525
+    cutpoint_source: "Dumurgier et al., Neurology (2022) DOI:10.1212/WNL.0000000000200735 (Table 2, ADNI Elecsys): CSF-only ('algorithm') cutpoint for Aβ42/40 = 0.0525"
+    sensitivity_band_factors: [0.90, 0.95, 1.00, 1.05, 1.10]
+  # Coverage/transportability analysis (major secondary): CSF Aβ42 alone (published ADNI Elecsys cutpoint; Dumurgier et al., Neurology 2022).
+  csf_abeta42:
+    metric: "ABETA42"
+    pos_if: "ABETA42 < CUTPOINT"
+    cutpoint: 963.0
+    cutpoint_source: "Dumurgier et al., Neurology (2022) DOI:10.1212/WNL.0000000000200735 (Table 2, ADNI Elecsys): CSF-only ('algorithm') cutpoint for Aβ42 = 963 pg/mL"
+    sensitivity_band_factors: [0.90, 0.95, 1.00, 1.05, 1.10]
+
+plasma:
+  assay_filter:
+    ASSAYVERSION: "PrecivityAD2"
+  endpoints:
+    - name: "c2n_plasma_abeta42_abeta40_abeta_ratio"
+      direction: "lower_is_more_positive"
+      label: "Plasma Aβ42/40 ratio"
+    - name: "c2n_plasma_ptau217_ratio_ptau217_ratio"
+      direction: "higher_is_more_positive"
+      label: "Plasma %p-tau217"
+  quantile_strata:
+    low_q: 0.20
+    high_q: 0.80
+
+timing:
+  # Prespecified absolute day-gap strata (applied separately to each pairwise gap field).
+  strata:
+    - name: "le_7"
+      label: "≤7 days"
+      min_days: 0
+      max_days: 7
+    - name: "8_30"
+      label: "8–30 days"
+      min_days: 8
+      max_days: 30
+    - name: "gt_30"
+      label: ">30 days"
+      min_days: 31
+      max_days: 180
+
+models:
+  primary:
+    name: "conditional_independence"
+    type: "independence"
+    priors:
+      prevalence_beta: [1.0, 1.0]
+      sensor_beta: [1.0, 1.0]
+      plasma_dirichlet: [1.0, 1.0, 1.0]
+    mcmc:
+      chains: 4
+      burn_in: 2000
+      draws: 5000
+      thin: 1
+      seed: 20250103
+
+  sensitivity_dependence:
+    name: "pet_csf_conditional_dependence"
+    type: "dependence"
+    priors:
+      prevalence_beta: [1.0, 1.0]
+      pet_csf_dirichlet: [1.0, 1.0, 1.0, 1.0]
+      plasma_dirichlet: [1.0, 1.0, 1.0]
+    mcmc:
+      chains: 4
+      burn_in: 2000
+      draws: 5000
+      thin: 1
+      seed: 20250104
+
+  timing_strata_fits:
+    # Used for Figure 2: fit the primary (independence) model within each time-gap stratum.
+    mcmc:
+      chains: 2
+      burn_in: 1500
+      draws: 3000
+      thin: 1
+      seed: 20250105
+
+sensitivity:
+  # Key sensitivity axes for Figure S1.
+  csf_cutpoint_band: true
+  plasma_discretization:
+    primary: "quantiles"
+    alternatives:
+      - "paperA_triage_op_ppa0.95_npa0.95"
+
+reporting:
+  key_patterns:
+    # Prespecified patterns for sensitivity reporting (pet, csf, plasma_cat).
+    # plasma_cat uses generic labels {Low, Intermediate, High} across discretizations.
+    - name: "PET+/CSF+/High"
+      pet_pos: 1
+      csf_a_pos: 1
+      plasma_cat: "High"
+    - name: "PET+/CSF-/High"
+      pet_pos: 1
+      csf_a_pos: 0
+      plasma_cat: "High"
+    - name: "PET+/CSF-/Intermediate"
+      pet_pos: 1
+      csf_a_pos: 0
+      plasma_cat: "Intermediate"
+    - name: "PET-/CSF+/High"
+      pet_pos: 0
+      csf_a_pos: 1
+      plasma_cat: "High"
+    - name: "PET-/CSF+/Low"
+      pet_pos: 0
+      csf_a_pos: 1
+      plasma_cat: "Low"
+    - name: "PET-/CSF-/Low"
+      pet_pos: 0
+      csf_a_pos: 0
+      plasma_cat: "Low"
